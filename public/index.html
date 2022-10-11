@@ -14,17 +14,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Abel&display=swap" rel="stylesheet">
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <meta name="theme-color" content="#000000" />
-  <script>navigator.serviceWorker.register("public/sw.js")</script> 
+  <!-- <script>navigator.serviceWorker.register("public/sw.js")</script>  -->
     <title>Xyrus' Movie DataBase</title>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
 		<!-- PWA Script -->
-    <!-- <script>
+    <script>
   if (typeof navigator.serviceWorker !== 'undefined') {
-    navigator.serviceWorker.register('serviceWorker.js')
+    navigator.serviceWorker.register('/serviceWorker.js')
   }
-</script> -->
+</script>
   </body>
 </html>
