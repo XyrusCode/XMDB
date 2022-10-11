@@ -37,5 +37,10 @@
       "sizes": "750x1334",
       "type": "image/png"
     }
+  ],
+  "dir": "auto",
+  "lang": "en",
+  "categories": [
+    "entertainment"
   ]
 }
