@@ -32,6 +32,16 @@ bower_components
 # Compiled binary addons (https://nodejs.org/api/addons.html)
 build/Release
 
+# Build output
+build
+dist
+
+# Vercel
+.vercel
+
+# Editor / assistant scaffolding
+.claude
+
 # Dependency directories
 node_modules/
 jspm_packages/
@@ -54,8 +64,11 @@ typings/
 # Yarn Integrity file
 .yarn-integrity
 
-# dotenv environment variables file
+# Environment variables. Ignore every variant and opt the example back in,
+# so a new .env.<something> is never tracked by default.
 .env
+.env.*
+!.env.example
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
