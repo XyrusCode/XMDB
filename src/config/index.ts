@@ -34,8 +34,19 @@ export const config = {
 } as const;
 
 export const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/';
+
+/**
+ * Sized to where each image is actually rendered. The old app asked for w780
+ * everywhere — including grid thumbnails ~200px wide and cast headshots — which
+ * is a four-fold overfetch repeated twenty times per sheet.
+ */
 export const BACKDROP_SIZE = 'w1280';
-export const POSTER_SIZE = 'w780';
+/** The one large poster on a detail page. */
+export const POSTER_SIZE = 'w500';
+/** Contact-sheet frames. */
+export const THUMB_SIZE = 'w342';
+/** Cast headshots. */
+export const PROFILE_SIZE = 'w185';
 
 /** TMDB refuses to paginate past 500 regardless of total_pages. */
 export const MAX_TMDB_PAGE = 500;
