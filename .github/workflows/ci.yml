@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   test:
-    name: Lint, typecheck, test, build
+    name: Typecheck, test, build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -37,7 +37,9 @@ jobs:
         run: npm run test
 
       # Proves the app compiles. The deploy job builds its own artifact through
-      # `vercel build`, which needs secrets this job deliberately does not have.
+      # `vercel build`; this one is thrown away, hence the placeholder
+      # credential — Vite inlines import.meta.env at build time, so a real one
+      # would only end up in a discarded bundle.
       - name: Build
         run: npm run build
         env:
@@ -69,15 +71,32 @@ jobs:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
     steps:
+      # Until the Vercel project is linked and its secrets are set, every step
+      # below skips with a notice rather than failing. A red X on each push
+      # says nothing useful. The `secrets` context cannot be read from a
+      # job-level `if`, so this has to be a step.
+      - name: Check Vercel is configured
+        id: cfg
+        run: |
+          if [ -z "${{ secrets.VERCEL_TOKEN }}" ] || [ -z "${{ secrets.VERCEL_PROJECT_ID }}" ]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Vercel is not configured — set VERCEL_TOKEN, VERCEL_ORG_ID and VERCEL_PROJECT_ID to enable deploys. See the README."
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: actions/checkout@v4
+        if: steps.cfg.outputs.configured == 'true'
 
       - uses: actions/setup-node@v4
+        if: steps.cfg.outputs.configured == 'true'
         with:
           node-version: '22'
           cache: npm
 
       - name: Work out the target environment
         id: env
+        if: steps.cfg.outputs.configured == 'true'
         run: |
           if [ "${{ github.ref }}" = "refs/heads/main" ]; then
             echo "target=production" >> "$GITHUB_OUTPUT"
@@ -85,26 +104,30 @@ jobs:
             echo "target=preview" >> "$GITHUB_OUTPUT"
           fi
 
-      # Pulls env vars from the Vercel project into .vercel/. This is why
-      # VITE_TMDB_TOKEN lives only in the Vercel dashboard and is never
-      # duplicated into GitHub secrets.
+      # Pulls the project's env vars into .vercel/. This is why the TMDB
+      # credential lives in the Vercel dashboard only and is never duplicated
+      # into GitHub secrets.
       - name: Pull Vercel environment
+        if: steps.cfg.outputs.configured == 'true'
         run: npx vercel@latest pull --yes --environment=${{ steps.env.outputs.target }} --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Build
+        if: steps.cfg.outputs.configured == 'true'
         run: npx vercel@latest build ${{ steps.env.outputs.target == 'production' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy
         id: deploy
+        if: steps.cfg.outputs.configured == 'true'
         run: |
           URL=$(npx vercel@latest deploy --prebuilt ${{ steps.env.outputs.target == 'production' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }})
           echo "url=$URL" >> "$GITHUB_OUTPUT"
           echo "Deployed to $URL"
 
-      # Deploying through the CLI rather than the git integration means CI is
-      # the gate, but it also costs the automatic PR comment. This puts it back.
+      # Deploying by CLI rather than the git integration means CI is the gate,
+      # but it also costs the integration's automatic PR comment. This puts it
+      # back.
       - name: Comment the preview URL on the PR
-        if: github.event_name == 'pull_request'
+        if: steps.cfg.outputs.configured == 'true' && github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
