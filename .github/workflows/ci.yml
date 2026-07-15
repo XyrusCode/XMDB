@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   test:
-    name: Typecheck, test, build
+    name: Lint, typecheck, test, build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,9 +26,11 @@ jobs:
 
       - run: npm ci
 
-      # Enabled in the follow-up that adds the eslint config.
-      # - name: Lint
-      #   run: npm run lint
+      - name: Lint
+        run: npm run lint
+
+      - name: Format check
+        run: npm run format:check
 
       - name: Typecheck
         run: npm run typecheck

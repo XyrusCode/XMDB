@@ -157,21 +157,14 @@
     rather than elements so it costs nothing and scales with the frame.
   */
   .perfs {
-    background-image: radial-gradient(
-      circle at center,
-      var(--color-sheet) 0 38%,
-      transparent 39%
-    );
+    background-image: radial-gradient(circle at center, var(--color-sheet) 0 38%, transparent 39%);
     background-size: 100% 14px;
     background-repeat: repeat-y;
   }
 }
 
-/* The ring draws itself on. Under reduced motion the global rule above
-   collapses the duration, and `forwards` lands it on the drawn state — so it
-   still marks focus, it just doesn't animate. */
-/* dashoffset only needs a target of 0; the dash length itself is set inline in
-   GreasePencilRing, where it sits next to the path it has to match. */
+/* The ring draws itself on. Only a target of 0 is needed here; the dash length
+   is set inline in GreasePencilRing, next to the path it has to match. */
 @keyframes grease-draw {
   to {
     stroke-dashoffset: 0;
@@ -184,7 +177,9 @@
   animation: grease-draw 0.45s ease-out forwards;
 }
 
-/* The ring animates its stroke on. Without motion it simply exists. */
+/* Collapsing the duration rather than removing the animation matters for the
+   ring: `forwards` still lands it on the drawn state, so it goes on marking
+   focus — it just arrives instead of being drawn. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

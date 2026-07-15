@@ -22,7 +22,9 @@ export const MovieSheet = ({ movie }: { movie: MovieView }) => {
           <div className="perfs absolute inset-y-0 right-0 w-1.5" aria-hidden="true" />
           <div className="mx-1.5 aspect-2/3 overflow-hidden bg-sheet">
             <img
-              src={movie.poster_path ? `${IMAGE_BASE_URL}${POSTER_SIZE}${movie.poster_path}` : NoImage}
+              src={
+                movie.poster_path ? `${IMAGE_BASE_URL}${POSTER_SIZE}${movie.poster_path}` : NoImage
+              }
               alt={`Poster for ${movie.title}`}
               className="h-full w-full object-cover"
             />
@@ -51,7 +53,10 @@ export const MovieSheet = ({ movie }: { movie: MovieView }) => {
           {/* Runtime as an edit-bay timecode — it is a duration, so it reads
               like one. */}
           <Datum label="Runtime" value={toTimecode(movie.runtime)} />
-          <Datum label="Rating" value={movie.vote_average > 0 ? movie.vote_average.toFixed(1) : '—'} />
+          <Datum
+            label="Rating"
+            value={movie.vote_average > 0 ? movie.vote_average.toFixed(1) : '—'}
+          />
           <Datum label="Budget" value={convertMoney(movie.budget)} />
           <Datum label="Revenue" value={convertMoney(movie.revenue)} />
         </dl>

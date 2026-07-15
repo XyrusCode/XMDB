@@ -16,7 +16,10 @@ export const MoviePage = ({ movieId }: { movieId: number }) => {
       <nav aria-label="Breadcrumb" className="mb-6">
         <ol className="flex items-center gap-2">
           <li>
-            <Link to="/" className="edge rounded-xs underline-offset-4 outline-none hover:text-grease hover:underline">
+            <Link
+              to="/"
+              className="edge rounded-xs underline-offset-4 outline-none hover:text-grease hover:underline"
+            >
               Sheet
             </Link>
           </li>
