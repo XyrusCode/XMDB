@@ -10,17 +10,17 @@ import MovieInfo from './MovieInfo';
 import MovieInfoBar from './MovieInfoBar';
 import Actor from './Actor';
 // Hook
-import { useMovieFetch } from '../hooks/useMovieFetch';
+import { useMovie } from '../queries/use-movie';
 // Image
 import NoImage from '../images/no_image.jpg';
 
 const Movie = () => {
   const { movieId } = useParams();
 
-  const { state: movie, loading, error } = useMovieFetch(movieId);
+  const { data: movie, isPending, isError, error } = useMovie(Number(movieId));
 
-  if (loading) return <Spinner />;
-  if (error) return <div>Something went wrong...</div>;
+  if (isPending) return <Spinner />;
+  if (isError) return <div>{error?.message ?? 'Something went wrong...'}</div>;
 
   return (
     <>
