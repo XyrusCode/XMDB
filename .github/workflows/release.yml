@@ -1,0 +1,51 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write # needed to create the release
+
+jobs:
+  release:
+    name: Publish GitHub Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # release notes are generated from history
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      # Repeated from ci.yml on purpose: this workflow can create a release on
+      # its own, so it cannot rely on another one having checked.
+      - name: Check tag matches package.json version
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          PKG="$(node -p "require('./package.json').version")"
+          if [ "$TAG" != "$PKG" ]; then
+            echo "::error::Tag v$TAG does not match package.json version $PKG"
+            exit 1
+          fi
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_TMDB_API_KEY: build-check-not-a-real-credential
+
+      - name: Package the build
+        run: cd build && zip -r "../xmdb-${GITHUB_REF_NAME}.zip" .
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: xmdb-*.zip
+          # Generated from the commits in the tag, rather than a fixed blurb
+          # that would be identical for every version.
+          generate_release_notes: true
+          fail_on_unmatched_files: true
