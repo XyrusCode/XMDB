@@ -25,6 +25,5 @@
 
     "types": ["vite/client", "vitest/globals"]
   },
-  "include": ["src"],
-  "exclude": ["src/**/*.js", "src/**/*.jsx"]
+  "include": ["src"]
 }

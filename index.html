@@ -5,16 +5,32 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="icon" href="/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
+    <meta name="theme-color" content="#edf0f2" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#16120d" media="(prefers-color-scheme: dark)" />
     <meta name="description" content="Browse popular films and search The Movie Database." />
     <link rel="apple-touch-icon" href="/logo192.png" />
-    <link href="https://fonts.googleapis.com/css2?family=Abel&display=swap" rel="stylesheet" />
     <link rel="manifest" href="/manifest.json" />
-    <title>Xyrus' Movie DataBase</title>
+    <title>XMDB — Xyrus' Movie DataBase</title>
+    <script>
+      // Sets .dark before first paint, so the darkroom palette does not arrive
+      // as a flash after a light one. One class drives both the CSS tokens and
+      // Tailwind's dark: variant. The stored key leaves room for a toggle.
+      (function () {
+        try {
+          var stored = localStorage.getItem('xmdb.theme');
+          var dark = stored
+            ? stored === 'dark'
+            : window.matchMedia('(prefers-color-scheme: dark)').matches;
+          document.documentElement.classList.toggle('dark', dark);
+        } catch (e) {
+          /* Private mode blocks localStorage; light is a fine default. */
+        }
+      })();
+    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
-    <script type="module" src="/src/index.jsx"></script>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

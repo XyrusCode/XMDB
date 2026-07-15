@@ -1,0 +1,196 @@
+@import 'tailwindcss';
+@import 'shadcn/tailwind.css';
+
+/* wdth.css, not standard.css: this ships the width axis (62%-125%) that the
+   display type uses to fit titles to their frame. */
+@import '@fontsource-variable/archivo/wdth.css';
+@import '@fontsource/dm-mono/400.css';
+@import '@fontsource/dm-mono/500.css';
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+  "Contact Sheet" — a film editor's lightbox, not a streaming app.
+
+  Every device here maps to something the data actually says: frame numbers are
+  TMDB's popularity rank, the timecode is runtime, the grid is a contact sheet
+  because a wall of posters already is one, and the grease-pencil ring is the
+  mark an editor draws on a select.
+
+  The palette is light on purpose. Posters are the only saturated things in the
+  product, so the sheet recedes and the films don't.
+*/
+:root {
+  --radius: 0.125rem;
+
+  /* The lightbox surface. Cool, photographic — deliberately not cream. */
+  --sheet: #edf0f2;
+  --frame: #ffffff;
+  /* The black film border between frames. */
+  --rebate: #1a1d21;
+  /* Chinagraph pencil. Selects and focus only — never decoration. */
+  --grease: #e03a21;
+  --pencil: #5a6169;
+  --sprocket: #c9cfd4;
+
+  --background: var(--sheet);
+  --foreground: var(--rebate);
+  --card: var(--frame);
+  --card-foreground: var(--rebate);
+  --popover: var(--frame);
+  --popover-foreground: var(--rebate);
+  --primary: var(--rebate);
+  --primary-foreground: var(--sheet);
+  --secondary: #e2e6e9;
+  --secondary-foreground: var(--rebate);
+  --muted: #e2e6e9;
+  --muted-foreground: var(--pencil);
+  --accent: var(--grease);
+  --accent-foreground: #ffffff;
+  --destructive: #b3231e;
+  --border: var(--sprocket);
+  --input: var(--sprocket);
+  --ring: var(--grease);
+}
+
+/*
+  Dark mode turns the lightbox off and puts you in the darkroom: warm near-black
+  under a safelight, rather than the same greys inverted.
+*/
+.dark {
+  /* Only the six base tokens are restated. Custom properties are late-bound, so
+     everything defined as var(--sheet) and friends above follows on its own. */
+  --sheet: #16120d;
+  --frame: #211b14;
+  /* "rebate" is now the light on a dark strip, hence the inversion. */
+  --rebate: #efe9df;
+  --grease: #f0a202;
+  --pencil: #a4988a;
+  --sprocket: #3a3128;
+
+  /* The few that are not derived. */
+  --secondary: #2b2419;
+  --muted: #2b2419;
+  --accent-foreground: #16120d;
+  --destructive: #e2563d;
+}
+
+@theme inline {
+  --color-sheet: var(--sheet);
+  --color-frame: var(--frame);
+  --color-rebate: var(--rebate);
+  --color-grease: var(--grease);
+  --color-pencil: var(--pencil);
+  --color-sprocket: var(--sprocket);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --font-sans: 'Archivo Variable', system-ui, sans-serif;
+  --font-display: 'Archivo Variable', system-ui, sans-serif;
+  --font-mono: 'DM Mono', ui-monospace, monospace;
+
+  --radius-sm: calc(var(--radius) * 0.5);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) * 2);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* The grease pencil is the focus ring, so the accessible affordance and the
+     brand mark are the same object. */
+  :focus-visible {
+    @apply outline-grease outline-2 outline-offset-2;
+  }
+}
+
+@layer components {
+  /*
+    Display type. The width axis does the work: long titles compress toward
+    condensed and short ones stretch toward expanded, the way poster lettering
+    is drawn to fit its frame. Set --wdth per element.
+  */
+  .display {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-stretch: var(--wdth, 100%);
+    letter-spacing: -0.02em;
+    line-height: 0.92;
+    text-transform: uppercase;
+  }
+
+  /* Edge codes, timecode, figures — data, so mono. */
+  .edge {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-pencil);
+  }
+
+  /*
+    Sprocket perforations down both edges of a frame. Drawn with a gradient
+    rather than elements so it costs nothing and scales with the frame.
+  */
+  .perfs {
+    background-image: radial-gradient(
+      circle at center,
+      var(--color-sheet) 0 38%,
+      transparent 39%
+    );
+    background-size: 100% 14px;
+    background-repeat: repeat-y;
+  }
+}
+
+/* The ring draws itself on. Under reduced motion the global rule above
+   collapses the duration, and `forwards` lands it on the drawn state — so it
+   still marks focus, it just doesn't animate. */
+/* dashoffset only needs a target of 0; the dash length itself is set inline in
+   GreasePencilRing, where it sits next to the path it has to match. */
+@keyframes grease-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.group:hover .ring-stroke,
+.group:focus-visible .ring-stroke,
+.group:has(:focus-visible) .ring-stroke {
+  animation: grease-draw 0.45s ease-out forwards;
+}
+
+/* The ring animates its stroke on. Without motion it simply exists. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
