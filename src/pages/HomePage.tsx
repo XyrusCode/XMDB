@@ -77,7 +77,11 @@ export const HomePage = () => {
 
           {hasNextPage && (
             <div className="mt-10 flex justify-center">
-              <Button variant="outline" onClick={() => fetchNextPage()} disabled={isFetchingNextPage}>
+              <Button
+                variant="outline"
+                onClick={() => fetchNextPage()}
+                disabled={isFetchingNextPage}
+              >
                 {isFetchingNextPage ? 'Pulling next sheet…' : 'Next sheet'}
               </Button>
             </div>

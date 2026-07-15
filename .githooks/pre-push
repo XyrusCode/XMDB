@@ -1,0 +1,6 @@
+#!/bin/sh
+# The whole-project checks, kept off pre-commit so committing stays quick.
+set -e
+
+npm run typecheck
+npm run test

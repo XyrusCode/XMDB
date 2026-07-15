@@ -3,10 +3,9 @@ import {
   createRoute,
   createRouter,
   notFound,
-  Outlet,
 } from '@tanstack/react-router';
 import type { QueryClient } from '@tanstack/react-query';
-import { Header } from '@/components/layouts/Header';
+import { RootLayout } from '@/components/layouts/RootLayout';
 import { HomePage } from '@/pages/HomePage';
 import { MoviePage } from '@/pages/MoviePage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
@@ -14,15 +13,6 @@ import { movieQueryOptions } from '@/queries/use-movie';
 import { isApiError } from '@/api/client';
 import { queryClient } from '@/queries/query-client';
 import { isValidMovieId, parseMovieId, stringifyMovieId } from '@/router/params';
-
-const RootLayout = () => (
-  <div className="min-h-dvh bg-sheet">
-    <Header />
-    <main className="mx-auto max-w-[1280px] px-4 py-8 sm:px-6">
-      <Outlet />
-    </main>
-  </div>
-);
 
 const rootRoute = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   component: RootLayout,
@@ -45,7 +35,8 @@ const movieRoute = createRoute({
   beforeLoad: ({ params }) => {
     if (!isValidMovieId(params.movieId)) throw notFound();
   },
-  loader: ({ context, params }) => context.queryClient.ensureQueryData(movieQueryOptions(params.movieId)),
+  loader: ({ context, params }) =>
+    context.queryClient.ensureQueryData(movieQueryOptions(params.movieId)),
   errorComponent: ({ error }) => {
     // A valid-looking id that TMDB has no film for is a 404, not a crash.
     if (isApiError(error) && error.status === 404) return <NotFoundPage />;

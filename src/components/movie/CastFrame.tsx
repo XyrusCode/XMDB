@@ -10,7 +10,9 @@ export const CastFrame = ({ actor }: { actor: CastMember }) => (
       <div className="perfs absolute inset-y-0 right-0 w-1.5" aria-hidden="true" />
       <div className="mx-1.5 aspect-2/3 overflow-hidden bg-sheet">
         <img
-          src={actor.profile_path ? `${IMAGE_BASE_URL}${PROFILE_SIZE}${actor.profile_path}` : NoImage}
+          src={
+            actor.profile_path ? `${IMAGE_BASE_URL}${PROFILE_SIZE}${actor.profile_path}` : NoImage
+          }
           alt=""
           loading="lazy"
           className="h-full w-full object-cover"
