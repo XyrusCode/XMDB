@@ -1,5 +1,5 @@
 {
-  "name": "Xmdb",
+  "name": "xmdb",
   "version": "0.1.0",
   "private": true,
   "author": "Xyrus Code",
@@ -36,5 +36,13 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^25.6.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@types/react-router-dom": "^5.3.3",
+    "typescript": "^6.0.3"
   }
 }
