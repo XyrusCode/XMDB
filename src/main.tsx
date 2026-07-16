@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider } from '@tanstack/react-router';
+import { Analytics } from '@vercel/analytics/react';
 import { AppProviders } from '@/providers/AppProviders';
 import { purgeLegacyCaches } from '@/lib/legacy-caches';
 import { router } from '@/router';
@@ -17,6 +18,7 @@ createRoot(rootElement).render(
   <StrictMode>
     <AppProviders>
       <RouterProvider router={router} />
+      <Analytics />
     </AppProviders>
   </StrictMode>,
 );
