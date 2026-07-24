@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { SEO } from '@/components/global/SEO';
 import { ContactSheet } from '@/components/movie/ContactSheet';
 import { Frame } from '@/components/movie/Frame';
 import { HeroFrame } from '@/components/movie/HeroFrame';
@@ -35,6 +36,11 @@ export const HomePage = () => {
 
   return (
     <>
+      <SEO
+        title="Discover Popular Movies"
+        description="Browse popular films and search The Movie Database. A contact sheet for the movies."
+      />
+
       {hero && <HeroFrame movie={hero} />}
 
       <div className="mb-8 max-w-md">

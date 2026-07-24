@@ -1,4 +1,7 @@
 import { Link } from '@tanstack/react-router';
+import { SEO } from '@/components/global/SEO';
+import { IMAGE_BASE_URL, POSTER_SIZE } from '@/config';
+import { createMovieStructuredData } from '@/helpers/structured-data';
 import { CastFrame } from '@/components/movie/CastFrame';
 import { ContactSheet } from '@/components/movie/ContactSheet';
 import { MovieSheet } from '@/components/movie/MovieSheet';
@@ -11,8 +14,21 @@ export const MoviePage = ({ movieId }: { movieId: number }) => {
 
   if (!movie) return null;
 
+  const description = movie.overview ? movie.overview.slice(0, 160) : undefined;
+  const image = movie.poster_path
+    ? `${IMAGE_BASE_URL}${POSTER_SIZE}${movie.poster_path}`
+    : undefined;
+
   return (
     <>
+      <SEO
+        title={movie.title}
+        description={description}
+        image={image}
+        type="video.movie"
+        structuredData={createMovieStructuredData(movie)}
+      />
+
       <nav aria-label="Breadcrumb" className="mb-6">
         <ol className="flex items-center gap-2">
           <li>
