@@ -1,21 +1,21 @@
 # Agent notes (XMDB)
 
-This repo is a Vite + React + TypeScript app (TanStack Router, TanStack Query). TMDB is accessed via Vercel serverless functions in `api/` so API keys/tokens stay server-side; the browser calls `/api/*`.
+This repo is a Vite + React + TypeScript app (TanStack Router, TanStack Query). TMDB is called directly from the client via Axios using `VITE_TMDB_TOKEN` or `VITE_TMDB_API_KEY`.
 
 ## Key paths
 
-- `src/routes` / `src/router` — routing (TanStack Router)
+- `src/router` — routing (TanStack Router)
 - `src/pages` — route-level pages
 - `src/components` — UI components
 - `src/queries` — React Query hooks
+- `src/api/client.ts` — Axios client + error normalization
 - `src/lib/library.ts` — localStorage library (watchlist, watched movies/episodes, region)
-- `api/` — Vercel serverless handlers that proxy TMDB
 
 ## Conventions
 
-- Prefer existing patterns (React Query hooks in `src/queries`, shared API client in `src/api/client.ts`).
-- Keep user data in `localStorage` only (no backend accounts). Use `src/lib/library.ts` helpers / `useLibrary` hook.
-- When adding TMDB endpoints, add a server handler under `api/` and a client wrapper via `api` + `uris`.
+- Use TanStack Query hooks in `src/queries` and the shared Axios `api` client.
+- Keep user data in `localStorage` only (no backend accounts). Use `src/lib/library.ts` / `useLibrary`.
+- Add loading and error states in pages/rows for good UX.
 
 ## Commands
 
@@ -26,4 +26,4 @@ This repo is a Vite + React + TypeScript app (TanStack Router, TanStack Query). 
 
 ## Environment
 
-Server (Vercel / runtime): set `TMDB_TOKEN` (v4, preferred) or `TMDB_API_KEY` (v3). Do not use `VITE_*` TMDB vars in this architecture.
+Set `VITE_TMDB_TOKEN` (preferred) or `VITE_TMDB_API_KEY` in `.env.local` for local dev.
