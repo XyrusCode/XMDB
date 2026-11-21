@@ -8,11 +8,20 @@ import type { QueryClient } from '@tanstack/react-query';
 import { RootLayout } from '@/components/layouts/RootLayout';
 import { HomePage } from '@/pages/HomePage';
 import { MoviePage } from '@/pages/MoviePage';
+import { TVPage } from '@/pages/TVPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { movieQueryOptions } from '@/queries/use-movie';
+import { tvQueryOptions } from '@/queries/use-tv';
 import { isApiError } from '@/api/client';
 import { queryClient } from '@/queries/query-client';
-import { isValidMovieId, parseMovieId, stringifyMovieId } from '@/router/params';
+
+function parseId(s: string): number {
+  const n = Number(s);
+  return Number.isFinite(n) && n > 0 && Number.isInteger(n) ? n : NaN;
+}
+function isValidId(s: string) {
+  return !Number.isNaN(parseId(s));
+}
 
 const rootRoute = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   component: RootLayout,
@@ -27,45 +36,57 @@ const indexRoute = createRoute({
 
 const movieRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/$movieId',
-  params: { parse: parseMovieId, stringify: stringifyMovieId },
-  // notFound() here, rather than throwing from params.parse: a parse that
-  // throws is caught by the router and sent to errorComponent, which rendered
-  // /asdf as "could not load this film" instead of a 404.
+  path: '/movie/$movieId',
   beforeLoad: ({ params }) => {
-    if (!isValidMovieId(params.movieId)) throw notFound();
+    if (!isValidId(params.movieId)) throw notFound();
   },
   loader: ({ context, params }) =>
-    context.queryClient.ensureQueryData(movieQueryOptions(params.movieId)),
+    context.queryClient.ensureQueryData(movieQueryOptions(parseId(params.movieId))),
   errorComponent: ({ error }) => {
-    // A valid-looking id that TMDB has no film for is a 404, not a crash.
     if (isApiError(error) && error.status === 404) return <NotFoundPage />;
     return (
-      <div role="alert" className="border border-grease p-6">
-        <p className="edge text-grease">Could not load this film</p>
-        <p className="mt-2 text-sm text-foreground">
-          {isApiError(error) ? error.message : 'Something went wrong.'}
-        </p>
+      <div role="alert" className="mx-auto max-w-5xl px-4 py-12">
+        <p className="text-lg font-semibold text-red-600">Could not load this movie</p>
+        <p className="mt-2 text-sm text-gray-600">{isApiError(error) ? error.message : 'Something went wrong.'}</p>
       </div>
     );
   },
   component: function MovieRouteComponent() {
     const { movieId } = movieRoute.useParams();
-    return <MoviePage movieId={movieId} />;
+    return <MoviePage movieId={parseId(movieId)} />;
   },
 });
 
-const routeTree = rootRoute.addChildren([indexRoute, movieRoute]);
+const tvRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/tv/$tvId',
+  beforeLoad: ({ params }) => {
+    if (!isValidId(params.tvId)) throw notFound();
+  },
+  loader: ({ context, params }) =>
+    context.queryClient.ensureQueryData(tvQueryOptions(parseId(params.tvId))),
+  errorComponent: ({ error }) => {
+    if (isApiError(error) && error.status === 404) return <NotFoundPage />;
+    return (
+      <div role="alert" className="mx-auto max-w-5xl px-4 py-12">
+        <p className="text-lg font-semibold text-red-600">Could not load this show</p>
+        <p className="mt-2 text-sm text-gray-600">{isApiError(error) ? error.message : 'Something went wrong.'}</p>
+      </div>
+    );
+  },
+  component: function TVRouteComponent() {
+    const { tvId } = tvRoute.useParams();
+    return <TVPage tvId={parseId(tvId)} />;
+  },
+});
+
+const routeTree = rootRoute.addChildren([indexRoute, movieRoute, tvRoute]);
 
 export const router = createRouter({
   routeTree,
   context: { queryClient },
   defaultNotFoundComponent: NotFoundPage,
-  // Preload on hover — the sheet is a grid of hoverable frames, which is the
-  // ideal case for it.
   defaultPreload: 'intent',
-  // Let React Query's staleTime be the only cache authority; otherwise the
-  // router keeps a second, disagreeing one.
   defaultPreloadStaleTime: 0,
 });
 
