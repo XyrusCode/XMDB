@@ -17,7 +17,7 @@ export const HeroFrame = ({ movie }: { movie: Movie }) => {
         <span className="edge tabular-nums">{year}</span>
       </div>
 
-      <Link to="/$movieId" params={{ movieId: movie.id }} className="group block outline-none">
+      <Link to="/movie/$movieId" params={{ movieId: String(movie.id) }} className="group block outline-none">
         <div className="relative bg-rebate p-2">
           <div className="relative aspect-16/9 overflow-hidden bg-sheet sm:aspect-21/9">
             {movie.backdrop_path ? (

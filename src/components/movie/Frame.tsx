@@ -15,8 +15,8 @@ interface FrameProps {
 export const Frame = ({ movieId, title, posterPath, frameNumber, year }: FrameProps) => (
   <li className="group relative">
     <Link
-      to="/$movieId"
-      params={{ movieId }}
+      to="/movie/$movieId"
+      params={{ movieId: String(movieId) }}
       className="block rounded-xs outline-none"
       aria-label={`${title}${year ? `, ${year}` : ''}`}
     >
