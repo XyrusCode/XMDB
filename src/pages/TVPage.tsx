@@ -5,14 +5,38 @@ import { IMAGE_BASE_URL, BACKDROP_SIZE, POSTER_SIZE } from '@/config';
 import { useTV } from '@/queries/use-tv';
 import { useSeason } from '@/queries/use-season';
 import { useLibrary } from '@/hooks/use-library';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export const TVPage = ({ tvId }: { tvId: number }) => {
-  const { data: tv } = useTV(tvId);
+  const { data: tv, isLoading, isError, error } = useTV(tvId);
   const { isInWatchlist, toggleWatchlist, toggleEpisodeWatched, isEpisodeWatched, region, setRegion } = useLibrary();
   const [selectedSeason, setSelectedSeason] = useState<number | null>(null);
   const { data: seasonData, isLoading: loadingSeason } = useSeason(tvId, selectedSeason);
 
-  if (!tv) return null;
+  if (isLoading) {
+    return (
+      <div className="max-w-5xl mx-auto px-1 py-8">
+        <Skeleton className="h-6 w-32 mb-6" />
+        <div className="flex flex-col md:flex-row gap-8">
+          <Skeleton className="w-64 aspect-[2/3] rounded-lg flex-shrink-0 mx-auto md:mx-0" />
+          <div className="flex-1 space-y-4">
+            <Skeleton className="h-10 w-3/4" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+  if (isError || !tv) {
+    return (
+      <div className="max-w-5xl mx-auto px-1 py-16 text-center">
+        <p className="text-xl font-semibold text-foreground mb-2">Couldn’t load this series</p>
+        <p className="text-muted-foreground mb-6">{(error as Error)?.message || 'Something went wrong.'}</p>
+        <Link to="/" className="text-blue-400 hover:underline">← Back to discover</Link>
+      </div>
+    );
+  }
 
   const inWatchlist = isInWatchlist(tv.id, 'tv');
   const wp = tv['watch/providers']?.results?.[region] || tv['watch/providers']?.results?.['US'];

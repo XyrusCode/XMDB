@@ -1,5 +1,5 @@
 import axios, { type AxiosError, type AxiosInstance } from 'axios';
-import { config } from '@/config';
+import { config, tmdbAuth } from '@/config';
 import type { ApiError } from '@/types/http';
 
 interface TmdbErrorBody {
@@ -12,19 +12,20 @@ export const api: AxiosInstance = axios.create({
   timeout: 15000,
   headers: {
     Accept: 'application/json',
+    ...(tmdbAuth.kind === 'bearer' ? { Authorization: `Bearer ${tmdbAuth.token}` } : {}),
   },
+  ...(tmdbAuth.kind === 'query' ? { params: { api_key: tmdbAuth.key } } : {}),
 });
 
 const normalize = (error: AxiosError): ApiError => {
   const status = error.response?.status ?? 0;
-  const body = error.response?.data as TmdbErrorBody | { status_message?: string } | undefined;
-  const msg =
-    (body && 'status_message' in body && body.status_message) ||
-    (status === 0 ? 'Network error. Please check your connection.' : error.message);
+  const body = error.response?.data as TmdbErrorBody | undefined;
   return {
-    code: `http_${status}`,
+    code: body?.status_code ? `tmdb_${body.status_code}` : `http_${status}`,
     status,
-    message: msg,
+    message:
+      body?.status_message ??
+      (status === 0 ? 'Network error. Please check your connection.' : error.message),
     url: error.config?.url,
   };
 };

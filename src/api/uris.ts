@@ -1,19 +1,19 @@
 export const uris = {
   movies: {
-    popular: '/movies/popular',
-    upcoming: '/movies/upcoming',
-    search: '/movies/search',
-    detail: (id: number) => `/movies/${id}`,
+    popular: '/movie/popular',
+    upcoming: '/movie/upcoming',
+    search: '/search/movie',
+    detail: (id: number) => `/movie/${id}`,
   },
   tv: {
     popular: '/tv/popular',
-    search: '/tv/search',
+    search: '/search/tv',
     detail: (id: number) => `/tv/${id}`,
     season: (id: number, season: number) => `/tv/${id}/season/${season}`,
   },
   trending: {
-    movies: '/trending/movies',
-    tv: '/trending/tv',
+    movies: '/trending/movie/week',
+    tv: '/trending/tv/week',
   },
   search: {
     multi: '/search/multi',

@@ -9,39 +9,26 @@ A streaming-style discovery app for movies and TV shows, powered by [TMDB](https
 | Build | Vite 6, TypeScript (strict) |
 | UI | React 19, Tailwind CSS v4 |
 | Routing | TanStack Router (code-based) |
-| Data | TanStack Query v5, Axios (client → `/api/*`) |
-| Server | Vercel serverless functions proxy TMDB (keeps credentials off the client) |
+| Data | TanStack Query v5, Axios |
 | Tests | Vitest, Testing Library, msw |
-| Deploy | Vercel (via GitHub Actions in this repo’s workflow) |
-
-## Features (current)
-
-- Streaming-style discovery: trending movies/TV, upcoming movies, popular series, search (multi).
-- Movie and TV detail pages with posters/backdrops, overviews, cast highlights.
-- “Where to watch” availability via TMDB watch providers (region selectable on detail pages).
-- Watchlist and watched state stored in `localStorage` (no sign-in).
-- TV season/episode guide with per-episode watched toggles.
-- PWA support via `vite-plugin-pwa` (where applicable).
+| Deploy | Vercel (via GitHub Actions) |
 
 ## Getting started
 
 ```bash
 npm install
+cp .env.example .env.local   # add your TMDB credential
 npm run dev
 ```
 
-App runs at `http://localhost:5173` by default.
+### TMDB credential
 
-### TMDB credentials (server-side)
+Get one from [themoviedb.org/settings/api](https://www.themoviedb.org/settings/api) and set **one** of these in `.env.local`:
 
-TMDB API calls are made from Vercel/server functions under `api/`, **not** from the browser bundle.
+- `VITE_TMDB_TOKEN` (v4 Read Access Token, preferred)
+- `VITE_TMDB_API_KEY` (v3 API key)
 
-Set **one** of these in your server/Vercel environment (and in local dev via your shell or a server env setup as appropriate):
-
-- `TMDB_TOKEN` — v4 “API Read Access Token” (preferred), sent as `Authorization: Bearer …`
-- `TMDB_API_KEY` — v3 API key (sent as query param on the server)
-
-Do **not** expose these as `VITE_*` variables for this app’s current architecture.
+These are bundled into the client (TMDB’s intended model for client apps). Keep them read-only/revocable in the TMDB dashboard.
 
 ## Scripts
 
@@ -51,14 +38,14 @@ Do **not** expose these as `VITE_*` variables for this app’s current architect
 | `npm run build` | Typecheck and build to `build/` |
 | `npm run preview` | Preview production build |
 | `npm run typecheck` | `tsc -b --noEmit` |
-| `npm run test` | Vitest (run once) |
+| `npm run test` | Vitest |
 | `npm run lint` | ESLint |
 
 ## Notes
 
-- Live TMDB responses require valid server credentials configured in the deployment environment.
-- Vercel Analytics is included in the app shell when enabled by the platform.
+- Watchlist, watched items, and region preferences are stored in `localStorage`.
+- Vercel Analytics is included when enabled by the platform.
 
 ## License
 
-MIT (see `LICENSE`).
+MIT

@@ -20,17 +20,17 @@ export function MediaCard({ id, mediaType, title, posterPath, year }: MediaCardP
       className="group block flex-shrink-0 w-36 sm:w-40 md:w-44 outline-none"
       aria-label={title}
     >
-      <div className="relative aspect-[2/3] overflow-hidden rounded-lg bg-neutral-800 shadow-md transition-transform duration-200 group-hover:scale-105 group-focus-visible:ring-2 group-focus-visible:ring-white/70">
+      <div className="relative aspect-[2/3] overflow-hidden rounded-lg bg-neutral-900 shadow-lg ring-1 ring-white/5 transition-all duration-300 group-hover:scale-105 group-hover:ring-white/20 group-hover:shadow-2xl group-focus-visible:ring-2 group-focus-visible:ring-white/60">
         <img
           src={posterPath ? `${IMAGE_BASE_URL}${POSTER_SIZE}${posterPath}` : NoImage}
           alt=""
           loading="lazy"
-          className="h-full w-full object-cover"
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/0 to-black/0 opacity-60 group-hover:opacity-100 transition-opacity duration-300" />
       </div>
-      <p className="mt-2 text-sm font-medium text-foreground line-clamp-2 leading-tight">{title}</p>
-      {year && <p className="text-xs text-muted-foreground mt-0.5">{year}</p>}
+      <p className="mt-2.5 text-sm font-medium text-foreground line-clamp-2 leading-snug group-hover:text-white transition-colors">{title}</p>
+      {year && <p className="text-xs text-muted-foreground mt-1">{year}</p>}
     </Link>
   );
 }
