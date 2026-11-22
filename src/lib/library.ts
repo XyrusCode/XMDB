@@ -1,3 +1,6 @@
+import { createStore, type Store } from '@tanstack/store';
+import { useStore, useSelector } from '@tanstack/react-store';
+
 export type MediaType = 'movie' | 'tv';
 
 export interface WatchlistItem {
@@ -36,84 +39,69 @@ function detectRegion(): string {
   return 'US';
 }
 
-function safeParse(raw: string | null): LibraryState {
-  if (!raw) {
-    return { ...defaultState, region: typeof window !== 'undefined' ? detectRegion() : 'US' };
-  }
+function loadPersisted(): LibraryState {
+  if (typeof window === 'undefined') return defaultState;
   try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return { ...defaultState, region: detectRegion() };
     const parsed = JSON.parse(raw) as Partial<LibraryState>;
     const hasRegion = typeof parsed.region === 'string' && parsed.region.length === 2;
     return {
       watchlist: Array.isArray(parsed.watchlist) ? parsed.watchlist : [],
       watchedMovies: Array.isArray(parsed.watchedMovies) ? parsed.watchedMovies : [],
       watchedEpisodes: parsed.watchedEpisodes && typeof parsed.watchedEpisodes === 'object' ? parsed.watchedEpisodes : {},
-      region: hasRegion ? (parsed.region as string).toUpperCase() : (typeof window !== 'undefined' ? detectRegion() : 'US'),
+      region: hasRegion ? (parsed.region as string).toUpperCase() : detectRegion(),
     };
   } catch {
-    return { ...defaultState, region: typeof window !== 'undefined' ? detectRegion() : 'US' };
+    return { ...defaultState, region: detectRegion() };
   }
 }
 
-let cachedState: LibraryState | null = null;
+/** Single source of truth: an immutable TanStack Store. */
+export const libraryStore: Store<LibraryState> = createStore(loadPersisted());
 
-function getCached(): LibraryState {
-  if (cachedState) return cachedState;
-  if (typeof window === 'undefined') {
-    cachedState = { ...defaultState };
-    return cachedState;
-  }
-  cachedState = safeParse(localStorage.getItem(STORAGE_KEY));
-  return cachedState;
-}
+/** Persist every change to localStorage (single write listener). */
+libraryStore.subscribe((value) => {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
+});
 
-function persistAndSet(next: LibraryState): LibraryState {
-  cachedState = next;
-  if (typeof window !== 'undefined') {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-  }
-  return next;
-}
-
-export function loadLibrary(): LibraryState {
-  return getCached();
-}
-
-export function getRegion(): string {
-  return getCached().region;
-}
-
+/** Immutable, batched write helpers. */
 export function setRegion(region: string): LibraryState {
-  const state = getCached();
-  const next = { ...state, region: region.toUpperCase().slice(0, 2) || 'US' };
-  return persistAndSet(next);
+  const clean = region.toUpperCase().slice(0, 2) || 'US';
+  libraryStore.setState((prev) => ({ ...prev, region: clean }));
+  return libraryStore.state;
 }
 
 export function isInWatchlist(id: number, mediaType: MediaType): boolean {
-  const state = getCached();
-  return state.watchlist.some((i) => i.id === id && i.mediaType === mediaType);
+  return libraryStore.state.watchlist.some((i) => i.id === id && i.mediaType === mediaType);
 }
 
 export function toggleWatchlist(item: WatchlistInput): LibraryState {
-  const state = getCached();
-  const exists = state.watchlist.findIndex((i) => i.id === item.id && i.mediaType === item.mediaType);
-  let watchlist: WatchlistItem[];
-  if (exists >= 0) {
-    watchlist = state.watchlist.filter((_, idx) => idx !== exists);
-  } else {
-    watchlist = [{ ...item, addedAt: Date.now() }, ...state.watchlist];
-  }
-  return persistAndSet({ ...state, watchlist });
+  libraryStore.setState((prev) => {
+    const exists = prev.watchlist.findIndex((i) => i.id === item.id && i.mediaType === item.mediaType);
+    let watchlist: WatchlistItem[];
+    if (exists >= 0) {
+      watchlist = prev.watchlist.filter((_, idx) => idx !== exists);
+    } else {
+      watchlist = [{ ...item, addedAt: Date.now() }, ...prev.watchlist];
+    }
+    return { ...prev, watchlist };
+  });
+  return libraryStore.state;
 }
 
 export function isMovieWatched(id: number): boolean {
-  return getCached().watchedMovies.includes(id);
+  return libraryStore.state.watchedMovies.includes(id);
 }
 
 export function toggleMovieWatched(id: number): LibraryState {
-  const state = getCached();
-  const has = state.watchedMovies.includes(id);
-  const watchedMovies = has ? state.watchedMovies.filter((m) => m !== id) : [...state.watchedMovies, id];
-  return persistAndSet({ ...state, watchedMovies });
+  libraryStore.setState((prev) => {
+    const has = prev.watchedMovies.includes(id);
+    const watchedMovies = has ? prev.watchedMovies.filter((m) => m !== id) : [...prev.watchedMovies, id];
+    return { ...prev, watchedMovies };
+  });
+  return libraryStore.state;
 }
 
 function epKey(tvId: number, season: number) {
@@ -121,23 +109,65 @@ function epKey(tvId: number, season: number) {
 }
 
 export function isEpisodeWatched(tvId: number, season: number, episode: number): boolean {
-  const state = getCached();
-  const arr = state.watchedEpisodes[epKey(tvId, season)] || [];
+  const arr = libraryStore.state.watchedEpisodes[epKey(tvId, season)] || [];
   return arr.includes(episode);
 }
 
 export function toggleEpisodeWatched(tvId: number, season: number, episode: number): LibraryState {
-  const state = getCached();
-  const key = epKey(tvId, season);
-  const arr = state.watchedEpisodes[key] || [];
-  const has = arr.includes(episode);
-  const nextArr = has ? arr.filter((e) => e !== episode) : [...arr, episode].sort((a, b) => a - b);
-  return persistAndSet({
-    ...state,
-    watchedEpisodes: { ...state.watchedEpisodes, [key]: nextArr },
+  libraryStore.setState((prev) => {
+    const key = epKey(tvId, season);
+    const arr = prev.watchedEpisodes[key] || [];
+    const has = arr.includes(episode);
+    const nextArr = has ? arr.filter((e) => e !== episode) : [...arr, episode].sort((a, b) => a - b);
+    return {
+      ...prev,
+      watchedEpisodes: { ...prev.watchedEpisodes, [key]: nextArr },
+    };
   });
+  return libraryStore.state;
 }
 
 export function getWatchedEpisodesForSeason(tvId: number, season: number): number[] {
-  return getCached().watchedEpisodes[epKey(tvId, season)] || [];
+  return libraryStore.state.watchedEpisodes[epKey(tvId, season)] || [];
+}
+
+/** Derived: watchlist count (computed on read). */
+export function getWatchlistCount(): number {
+  return libraryStore.state.watchlist.length;
+}
+
+/** Derived: watched movies count (computed on read). */
+export function getWatchedMoviesCount(): number {
+  return libraryStore.state.watchedMovies.length;
+}
+
+/** React hook: subscribe to the whole store state. */
+export function useLibraryState(): LibraryState {
+  return useStore(libraryStore);
+}
+
+/** React hook: subscribe to a selected slice — rerenders only when the slice changes. */
+export function useLibrarySelector<T>(select: (state: LibraryState) => T): T {
+  return useSelector(libraryStore, select);
+}
+
+/** Backwards-compatible hook used by existing components. */
+export function useLibrary() {
+  const state = useLibraryState();
+  const watchlistCount = useLibrarySelector((s) => s.watchlist.length);
+  const watchedMoviesCount = useLibrarySelector((s) => s.watchedMovies.length);
+
+  return {
+    ...state,
+    watchlistCount,
+    watchedMoviesCount,
+    toggleWatchlist: (item: WatchlistInput) => toggleWatchlist(item),
+    toggleMovieWatched: (id: number) => toggleMovieWatched(id),
+    toggleEpisodeWatched: (tvId: number, season: number, episode: number) =>
+      toggleEpisodeWatched(tvId, season, episode),
+    setRegion: (region: string) => setRegion(region),
+    isInWatchlist: (id: number, mediaType: MediaType) => isInWatchlist(id, mediaType),
+    isMovieWatched: (id: number) => isMovieWatched(id),
+    isEpisodeWatched: (tvId: number, season: number, ep: number) => isEpisodeWatched(tvId, season, ep),
+  };
 }
