@@ -1,17 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useDebouncedValue } from '@tanstack/react-pacer';
 
 /**
- * Lifted out of SearchBar, which used to own the timer and push the settled
- * value upward. Debouncing here means the *debounced* value is what reaches the
- * query key, so typing produces one request rather than one per keystroke.
+ * Debounced search value via TanStack Pacer's adapter. The debounced value
+ * reaches the query key, so typing produces one request rather than one per
+ * keystroke. Framework-agnostic pacing lives in the core `@tanstack/pacer`.
  */
-export const useDebounce = <T>(value: T, delay = 500): T => {
-  const [debounced, setDebounced] = useState(value);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setDebounced(value), delay);
-    return () => clearTimeout(timer);
-  }, [value, delay]);
-
+export const useDebounce = <T>(value: T, wait = 400): T => {
+  const [debounced] = useDebouncedValue(value, { wait });
   return debounced;
 };
