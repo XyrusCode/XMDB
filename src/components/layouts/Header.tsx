@@ -1,21 +1,21 @@
 import { Link } from '@tanstack/react-router';
 
 export const Header = () => (
-  <header className="border-b border-sprocket">
-    <div className="mx-auto flex max-w-[1280px] items-center justify-between px-4 py-4 sm:px-6">
-      <Link to="/" className="group flex items-baseline gap-2 rounded-xs outline-none">
-        <span className="display text-xl" style={{ '--wdth': '118%' } as React.CSSProperties}>
+  <header className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-50">
+    <div className="mx-auto flex max-w-[1440px] items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+      <Link to="/" className="group flex items-center gap-3 rounded outline-none">
+        <img src="/icon.svg" alt="" className="h-9 w-9 sm:h-10 sm:w-10" />
+        <span className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
           XMDB
         </span>
-        <span className="edge hidden sm:inline">Xyrus&rsquo; Movie DataBase</span>
       </Link>
       <a
         href="https://www.themoviedb.org/"
         target="_blank"
         rel="noreferrer noopener"
-        className="edge rounded-xs underline-offset-4 outline-none hover:text-grease hover:underline"
+        className="text-xs text-muted-foreground hover:text-foreground transition-colors"
       >
-        Data &middot; TMDB
+        Powered by TMDB
       </a>
     </div>
   </header>

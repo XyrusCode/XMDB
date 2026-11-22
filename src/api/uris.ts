@@ -15,6 +15,10 @@ export const uris = {
     movies: '/trending/movie/week',
     tv: '/trending/tv/week',
   },
+  discover: {
+    movie: '/discover/movie',
+    tv: '/discover/tv',
+  },
   search: {
     multi: '/search/multi',
   },
