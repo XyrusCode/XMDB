@@ -13,24 +13,23 @@ import {
 } from './library';
 
 describe('library (TanStack Store)', () => {
-  beforeEach(() => {
-    localStorage.clear();
-    // Reset the store singleton between tests.
+  const reset = () => {
     libraryStore.setState(() => ({
       watchlist: [],
       watchedMovies: [],
       watchedEpisodes: {},
       region: 'US',
+      mediaScroll: {},
     }));
+  };
+
+  beforeEach(() => {
+    localStorage.clear();
+    reset();
   });
 
   afterEach(() => {
-    libraryStore.setState(() => ({
-      watchlist: [],
-      watchedMovies: [],
-      watchedEpisodes: {},
-      region: 'US',
-    }));
+    reset();
   });
 
   it('returns default state when empty', () => {

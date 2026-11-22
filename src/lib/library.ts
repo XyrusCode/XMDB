@@ -19,6 +19,8 @@ export interface LibraryState {
   watchedMovies: number[];
   watchedEpisodes: Record<string, number[]>;
   region: string;
+  /** Scroll position snapshots per virtual row (stored per-row id), persisted in localStorage. */
+  mediaScroll: Record<string, number>;
 }
 
 const STORAGE_KEY = 'xmdb_library_v1';
@@ -28,6 +30,7 @@ const defaultState: LibraryState = {
   watchedMovies: [],
   watchedEpisodes: {},
   region: 'US',
+  mediaScroll: {},
 };
 
 function detectRegion(): string {
@@ -51,6 +54,7 @@ function loadPersisted(): LibraryState {
       watchedMovies: Array.isArray(parsed.watchedMovies) ? parsed.watchedMovies : [],
       watchedEpisodes: parsed.watchedEpisodes && typeof parsed.watchedEpisodes === 'object' ? parsed.watchedEpisodes : {},
       region: hasRegion ? (parsed.region as string).toUpperCase() : detectRegion(),
+      mediaScroll: parsed.mediaScroll && typeof parsed.mediaScroll === 'object' ? parsed.mediaScroll : {},
     };
   } catch {
     return { ...defaultState, region: detectRegion() };
@@ -129,6 +133,16 @@ export function toggleEpisodeWatched(tvId: number, season: number, episode: numb
 
 export function getWatchedEpisodesForSeason(tvId: number, season: number): number[] {
   return libraryStore.state.watchedEpisodes[epKey(tvId, season)] || [];
+}
+
+/** Scroll snapshots per virtual row (store-backed, persisted). */
+export function getScrollSnapshot(rowKey: string): number | undefined {
+  return libraryStore.state.mediaScroll[rowKey];
+}
+
+export function setScrollSnapshot(rowKey: string, offset: number): LibraryState {
+  libraryStore.setState((prev) => ({ ...prev, mediaScroll: { ...prev.mediaScroll, [rowKey]: Math.round(offset) } }));
+  return libraryStore.state;
 }
 
 /** Derived: watchlist count (computed on read). */

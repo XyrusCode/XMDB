@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import { SEO } from '@/components/global/SEO';
 import { MediaCard } from '@/components/media/MediaCard';
-import { MediaRow } from '@/components/media/MediaRow';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useTrendingMovies, useTrendingTV } from '@/queries/use-trending';
@@ -11,6 +10,7 @@ import { usePopularTV } from '@/queries/use-tv-popular';
 import { useMultiSearch } from '@/queries/use-multi-search';
 import { useAnimePicks, useKDramas, useCDramas } from '@/queries/use-discover';
 import { useLibrary } from '@/hooks/use-library';
+import { MediaVirtualRow } from '@/components/virtual/MediaVirtualRow';
 import { IMAGE_BASE_URL, BACKDROP_SIZE } from '@/config';
 
 function yearFromDate(d?: string) {
@@ -142,64 +142,90 @@ export const HomePage = () => {
         </section>
       )}
 
-      {/* Rows */}
+      {/* Rows (virtualized) */}
       {!isSearching && (
         <div className="space-y-2">
-          <MediaRow title="Trending Movies" subtitle={`Popular in ${region}`}>
-            {loadingTM && <RowSkeleton />}
-            {errTM && <p className="text-sm text-red-400 py-4">Failed to load trending movies.</p>}
-            {!loadingTM && !errTM && trendingMovies?.map((m) => (
-              <MediaCard key={m.id} id={m.id} mediaType="movie" title={m.title} posterPath={m.poster_path} year={yearFromDate(m.release_date)} />
-            ))}
-          </MediaRow>
+          <MediaVirtualRow
+            title="Trending Movies"
+            items={trendingMovies?.map((m) => ({
+              id: m.id, mediaType: 'movie' as const, title: m.title, posterPath: m.poster_path, year: yearFromDate(m.release_date),
+            })) ?? []}
+            rowKey="trending-movies"
+            loading={loadingTM}
+            error={errTM ? 'Failed to load trending movies.' : undefined}
+            subtitle={`Popular in ${region}`}
+            renderItem={(item) => <MediaCard key={item.id} id={item.id} mediaType={item.mediaType} title={item.title} posterPath={item.posterPath} year={item.year} />}
+          />
 
-          <MediaRow title="Trending Series" subtitle="This week">
-            {loadingTT && <RowSkeleton />}
-            {errTT && <p className="text-sm text-red-400 py-4">Failed to load trending series.</p>}
-            {!loadingTT && !errTT && trendingTV?.map((t) => (
-              <MediaCard key={t.id} id={t.id} mediaType="tv" title={t.name} posterPath={t.poster_path} year={yearFromDate(t.first_air_date)} />
-            ))}
-          </MediaRow>
+          <MediaVirtualRow
+            title="Trending Series"
+            items={trendingTV?.map((t) => ({
+              id: t.id, mediaType: 'tv' as const, title: t.name, posterPath: t.poster_path, year: yearFromDate(t.first_air_date),
+            })) ?? []}
+            rowKey="trending-tv"
+            loading={loadingTT}
+            error={errTT ? 'Failed to load trending series.' : undefined}
+            renderItem={(item) => <MediaCard key={item.id} id={item.id} mediaType={item.mediaType} title={item.title} posterPath={item.posterPath} year={item.year} />}
+          />
 
-          <MediaRow title="Upcoming Movies" subtitle={`In ${region}`}>
-            {loadingUM && <RowSkeleton />}
-            {errUM && <p className="text-sm text-red-400 py-4">Failed to load upcoming movies.</p>}
-            {!loadingUM && !errUM && upcomingMovies?.map((m) => (
-              <MediaCard key={m.id} id={m.id} mediaType="movie" title={m.title} posterPath={m.poster_path} year={yearFromDate(m.release_date)} />
-            ))}
-          </MediaRow>
+          <MediaVirtualRow
+            title="Upcoming Movies"
+            items={upcomingMovies?.map((m) => ({
+              id: m.id, mediaType: 'movie' as const, title: m.title, posterPath: m.poster_path, year: yearFromDate(m.release_date),
+            })) ?? []}
+            rowKey="upcoming-movies"
+            loading={loadingUM}
+            error={errUM ? 'Failed to load upcoming movies.' : undefined}
+            subtitle={`In ${region}`}
+            renderItem={(item) => <MediaCard key={item.id} id={item.id} mediaType={item.mediaType} title={item.title} posterPath={item.posterPath} year={item.year} />}
+          />
 
-          <MediaRow title="Popular Series">
-            {loadingPT && <RowSkeleton />}
-            {errPT && <p className="text-sm text-red-400 py-4">Failed to load popular series.</p>}
-            {!loadingPT && !errPT && popularTV?.map((t) => (
-              <MediaCard key={t.id} id={t.id} mediaType="tv" title={t.name} posterPath={t.poster_path} year={yearFromDate(t.first_air_date)} />
-            ))}
-          </MediaRow>
+          <MediaVirtualRow
+            title="Popular Series"
+            items={popularTV?.map((t) => ({
+              id: t.id, mediaType: 'tv' as const, title: t.name, posterPath: t.poster_path, year: yearFromDate(t.first_air_date),
+            })) ?? []}
+            rowKey="popular-tv"
+            loading={loadingPT}
+            error={errPT ? 'Failed to load popular series.' : undefined}
+            renderItem={(item) => <MediaCard key={item.id} id={item.id} mediaType={item.mediaType} title={item.title} posterPath={item.posterPath} year={item.year} />}
+          />
 
-          <MediaRow title="Anime" subtitle="Japanese animation">
-            {loadingAnime && <RowSkeleton />}
-            {errAnime && <p className="text-sm text-red-400 py-4">Failed to load anime picks.</p>}
-            {!loadingAnime && !errAnime && animePicks?.map((t) => (
-              <MediaCard key={t.id} id={t.id} mediaType="tv" title={t.name} posterPath={t.poster_path} year={yearFromDate(t.first_air_date)} />
-            ))}
-          </MediaRow>
+          <MediaVirtualRow
+            title="Anime"
+            subtitle="Japanese animation"
+            items={animePicks?.map((t) => ({
+              id: t.id, mediaType: 'tv' as const, title: t.name, posterPath: t.poster_path, year: yearFromDate(t.first_air_date),
+            })) ?? []}
+            rowKey="anime"
+            loading={loadingAnime}
+            error={errAnime ? 'Failed to load anime picks.' : undefined}
+            renderItem={(item) => <MediaCard key={item.id} id={item.id} mediaType={item.mediaType} title={item.title} posterPath={item.posterPath} year={item.year} />}
+          />
 
-          <MediaRow title="K-Dramas" subtitle="Korean series">
-            {loadingKD && <RowSkeleton />}
-            {errKD && <p className="text-sm text-red-400 py-4">Failed to load K-dramas.</p>}
-            {!loadingKD && !errKD && kdramas?.map((t) => (
-              <MediaCard key={t.id} id={t.id} mediaType="tv" title={t.name} posterPath={t.poster_path} year={yearFromDate(t.first_air_date)} />
-            ))}
-          </MediaRow>
+          <MediaVirtualRow
+            title="K-Dramas"
+            subtitle="Korean series"
+            items={kdramas?.map((t) => ({
+              id: t.id, mediaType: 'tv' as const, title: t.name, posterPath: t.poster_path, year: yearFromDate(t.first_air_date),
+            })) ?? []}
+            rowKey="kdrama"
+            loading={loadingKD}
+            error={errKD ? 'Failed to load K-dramas.' : undefined}
+            renderItem={(item) => <MediaCard key={item.id} id={item.id} mediaType={item.mediaType} title={item.title} posterPath={item.posterPath} year={item.year} />}
+          />
 
-          <MediaRow title="C-Dramas" subtitle="Chinese series">
-            {loadingCD && <RowSkeleton />}
-            {errCD && <p className="text-sm text-red-400 py-4">Failed to load C-dramas.</p>}
-            {!loadingCD && !errCD && cdramas?.map((t) => (
-              <MediaCard key={t.id} id={t.id} mediaType="tv" title={t.name} posterPath={t.poster_path} year={yearFromDate(t.first_air_date)} />
-            ))}
-          </MediaRow>
+          <MediaVirtualRow
+            title="C-Dramas"
+            subtitle="Chinese series"
+            items={cdramas?.map((t) => ({
+              id: t.id, mediaType: 'tv' as const, title: t.name, posterPath: t.poster_path, year: yearFromDate(t.first_air_date),
+            })) ?? []}
+            rowKey="cdrama"
+            loading={loadingCD}
+            error={errCD ? 'Failed to load C-dramas.' : undefined}
+            renderItem={(item) => <MediaCard key={item.id} id={item.id} mediaType={item.mediaType} title={item.title} posterPath={item.posterPath} year={item.year} />}
+          />
         </div>
       )}
     </>
