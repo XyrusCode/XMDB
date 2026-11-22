@@ -13,6 +13,7 @@ import { TVPage } from '@/pages/TVPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { movieQueryOptions } from '@/queries/use-movie';
 import { tvQueryOptions } from '@/queries/use-tv';
+import { WatchlistPage } from '@/pages/WatchlistPage';
 import { isApiError } from '@/api/client';
 import { queryClient } from '@/queries/query-client';
 
@@ -85,6 +86,12 @@ const movieRoute = createRoute({
   },
 });
 
+const watchlistRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/watchlist',
+  component: WatchlistPage,
+});
+
 const tvRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/tv/$tvId',
@@ -109,7 +116,7 @@ const tvRoute = createRoute({
   },
 });
 
-const routeTree = rootRoute.addChildren([indexRoute, movieRoute, tvRoute]);
+const routeTree = rootRoute.addChildren([indexRoute, watchlistRoute, movieRoute, tvRoute]);
 
 export const router = createRouter({
   routeTree,

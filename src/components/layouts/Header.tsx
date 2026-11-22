@@ -9,6 +9,12 @@ export const Header = () => (
           XMDB
         </span>
       </Link>
+      <Link
+        to="/watchlist"
+        className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+      >
+        Watchlist
+      </Link>
       <a
         href="https://www.themoviedb.org/"
         target="_blank"
