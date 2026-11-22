@@ -14,7 +14,7 @@ export type WatchlistInput = Omit<WatchlistItem, 'addedAt'>;
 export interface LibraryState {
   watchlist: WatchlistItem[];
   watchedMovies: number[];
-  watchedEpisodes: Record<string, number[]>; // key: `${tvId}-s${season}` -> episode numbers
+  watchedEpisodes: Record<string, number[]>;
   region: string;
 }
 
@@ -54,34 +54,47 @@ function safeParse(raw: string | null): LibraryState {
   }
 }
 
-export function loadLibrary(): LibraryState {
-  if (typeof window === 'undefined') return defaultState;
-  return safeParse(localStorage.getItem(STORAGE_KEY));
+let cachedState: LibraryState | null = null;
+
+function getCached(): LibraryState {
+  if (cachedState) return cachedState;
+  if (typeof window === 'undefined') {
+    cachedState = { ...defaultState };
+    return cachedState;
+  }
+  cachedState = safeParse(localStorage.getItem(STORAGE_KEY));
+  return cachedState;
 }
 
-export function saveLibrary(state: LibraryState): void {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-}
-
-export function getRegion(): string {
-  return loadLibrary().region;
-}
-
-export function setRegion(region: string): LibraryState {
-  const state = loadLibrary();
-  const next = { ...state, region: region.toUpperCase().slice(0, 2) || 'US' };
-  saveLibrary(next);
+function persistAndSet(next: LibraryState): LibraryState {
+  cachedState = next;
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  }
   return next;
 }
 
+export function loadLibrary(): LibraryState {
+  return getCached();
+}
+
+export function getRegion(): string {
+  return getCached().region;
+}
+
+export function setRegion(region: string): LibraryState {
+  const state = getCached();
+  const next = { ...state, region: region.toUpperCase().slice(0, 2) || 'US' };
+  return persistAndSet(next);
+}
+
 export function isInWatchlist(id: number, mediaType: MediaType): boolean {
-  const state = loadLibrary();
+  const state = getCached();
   return state.watchlist.some((i) => i.id === id && i.mediaType === mediaType);
 }
 
 export function toggleWatchlist(item: WatchlistInput): LibraryState {
-  const state = loadLibrary();
+  const state = getCached();
   const exists = state.watchlist.findIndex((i) => i.id === item.id && i.mediaType === item.mediaType);
   let watchlist: WatchlistItem[];
   if (exists >= 0) {
@@ -89,24 +102,18 @@ export function toggleWatchlist(item: WatchlistInput): LibraryState {
   } else {
     watchlist = [{ ...item, addedAt: Date.now() }, ...state.watchlist];
   }
-  const next = { ...state, watchlist };
-  saveLibrary(next);
-  return next;
+  return persistAndSet({ ...state, watchlist });
 }
 
 export function isMovieWatched(id: number): boolean {
-  return loadLibrary().watchedMovies.includes(id);
+  return getCached().watchedMovies.includes(id);
 }
 
 export function toggleMovieWatched(id: number): LibraryState {
-  const state = loadLibrary();
+  const state = getCached();
   const has = state.watchedMovies.includes(id);
-  const watchedMovies = has
-    ? state.watchedMovies.filter((m) => m !== id)
-    : [...state.watchedMovies, id];
-  const next = { ...state, watchedMovies };
-  saveLibrary(next);
-  return next;
+  const watchedMovies = has ? state.watchedMovies.filter((m) => m !== id) : [...state.watchedMovies, id];
+  return persistAndSet({ ...state, watchedMovies });
 }
 
 function epKey(tvId: number, season: number) {
@@ -114,26 +121,23 @@ function epKey(tvId: number, season: number) {
 }
 
 export function isEpisodeWatched(tvId: number, season: number, episode: number): boolean {
-  const state = loadLibrary();
+  const state = getCached();
   const arr = state.watchedEpisodes[epKey(tvId, season)] || [];
   return arr.includes(episode);
 }
 
 export function toggleEpisodeWatched(tvId: number, season: number, episode: number): LibraryState {
-  const state = loadLibrary();
+  const state = getCached();
   const key = epKey(tvId, season);
   const arr = state.watchedEpisodes[key] || [];
   const has = arr.includes(episode);
   const nextArr = has ? arr.filter((e) => e !== episode) : [...arr, episode].sort((a, b) => a - b);
-  const next = {
+  return persistAndSet({
     ...state,
     watchedEpisodes: { ...state.watchedEpisodes, [key]: nextArr },
-  };
-  saveLibrary(next);
-  return next;
+  });
 }
 
 export function getWatchedEpisodesForSeason(tvId: number, season: number): number[] {
-  const state = loadLibrary();
-  return state.watchedEpisodes[epKey(tvId, season)] || [];
+  return getCached().watchedEpisodes[epKey(tvId, season)] || [];
 }

@@ -3,6 +3,7 @@ import {
   createRoute,
   createRouter,
   notFound,
+  Link,
 } from '@tanstack/react-router';
 import type { QueryClient } from '@tanstack/react-query';
 import { RootLayout } from '@/components/layouts/RootLayout';
@@ -23,9 +24,35 @@ function isValidId(s: string) {
   return !Number.isNaN(parseId(s));
 }
 
+function RootErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+  return (
+    <div className="min-h-[60vh] flex flex-col items-center justify-center px-4 text-center">
+      <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-3">Something went wrong</h1>
+      <p className="text-muted-foreground max-w-md mb-6 text-sm sm:text-base">
+        {error?.message || 'An unexpected error occurred. Please try again.'}
+      </p>
+      <div className="flex flex-wrap gap-3 justify-center">
+        <button
+          onClick={reset}
+          className="px-5 py-2.5 rounded bg-white text-black font-semibold text-sm hover:bg-white/90 transition-colors"
+        >
+          Try again
+        </button>
+        <Link
+          to="/"
+          className="px-5 py-2.5 rounded border border-border text-foreground font-semibold text-sm hover:bg-white/10 transition-colors"
+        >
+          Go home
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 const rootRoute = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   component: RootLayout,
   notFoundComponent: NotFoundPage,
+  errorComponent: RootErrorComponent,
 });
 
 const indexRoute = createRoute({
@@ -45,9 +72,10 @@ const movieRoute = createRoute({
   errorComponent: ({ error }) => {
     if (isApiError(error) && error.status === 404) return <NotFoundPage />;
     return (
-      <div role="alert" className="mx-auto max-w-5xl px-4 py-12">
-        <p className="text-lg font-semibold text-red-600">Could not load this movie</p>
-        <p className="mt-2 text-sm text-gray-600">{isApiError(error) ? error.message : 'Something went wrong.'}</p>
+      <div role="alert" className="max-w-5xl mx-auto px-4 py-16 text-center">
+        <p className="text-xl font-semibold text-foreground mb-2">Couldn’t load this movie</p>
+        <p className="text-muted-foreground mb-6">{isApiError(error) ? error.message : 'Something went wrong.'}</p>
+        <Link to="/" className="text-cyan-400 hover:underline">← Back to discover</Link>
       </div>
     );
   },
@@ -68,9 +96,10 @@ const tvRoute = createRoute({
   errorComponent: ({ error }) => {
     if (isApiError(error) && error.status === 404) return <NotFoundPage />;
     return (
-      <div role="alert" className="mx-auto max-w-5xl px-4 py-12">
-        <p className="text-lg font-semibold text-red-600">Could not load this show</p>
-        <p className="mt-2 text-sm text-gray-600">{isApiError(error) ? error.message : 'Something went wrong.'}</p>
+      <div role="alert" className="max-w-5xl mx-auto px-4 py-16 text-center">
+        <p className="text-xl font-semibold text-foreground mb-2">Couldn’t load this series</p>
+        <p className="text-muted-foreground mb-6">{isApiError(error) ? error.message : 'Something went wrong.'}</p>
+        <Link to="/" className="text-cyan-400 hover:underline">← Back to discover</Link>
       </div>
     );
   },
