@@ -48,8 +48,8 @@ export default defineConfig({
         lang: 'en',
         categories: ['entertainment'],
         // Matches the lightbox and the darkroom respectively.
-        theme_color: '#edf0f2',
-        background_color: '#edf0f2',
+        theme_color: '#0a0a0a',
+        background_color: '#0a0a0a',
         icons: [
           { src: '/favicon.ico', sizes: '64x64 32x32 24x24 16x16', type: 'image/x-icon' },
           { src: '/logo180.png', type: 'image/png', sizes: '180x180', purpose: 'any' },

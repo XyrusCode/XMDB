@@ -1,14 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/api/client';
 import { uris } from '@/api/uris';
-import { queryKeys } from '@/queries/query-keys';
 import type { Movie, Paginated } from '@/types/tmdb';
 
-export function useUpcomingMovies() {
+export function useUpcomingMovies(region?: string) {
   return useQuery({
-    queryKey: queryKeys.movies.upcoming(1),
+    queryKey: ['movies', 'upcoming', 1, region || 'US'],
     queryFn: async () => {
-      const { data } = await api.get<Paginated<Movie>>(uris.movies.upcoming, { params: { page: 1 } });
+      const { data } = await api.get<Paginated<Movie>>(uris.movies.upcoming, {
+        params: { page: 1, language: 'en-US', region: region || 'US' },
+      });
       return data.results.slice(0, 12);
     },
     staleTime: 1000 * 60 * 10,

@@ -27,18 +27,30 @@ const defaultState: LibraryState = {
   region: 'US',
 };
 
+function detectRegion(): string {
+  try {
+    const lang = navigator.language || (navigator as { userLanguage?: string }).userLanguage || 'en-US';
+    const parts = lang.split('-');
+    if (parts.length >= 2 && parts[1].length === 2) return parts[1].toUpperCase();
+  } catch {}
+  return 'US';
+}
+
 function safeParse(raw: string | null): LibraryState {
-  if (!raw) return defaultState;
+  if (!raw) {
+    return { ...defaultState, region: typeof window !== 'undefined' ? detectRegion() : 'US' };
+  }
   try {
     const parsed = JSON.parse(raw) as Partial<LibraryState>;
+    const hasRegion = typeof parsed.region === 'string' && parsed.region.length === 2;
     return {
       watchlist: Array.isArray(parsed.watchlist) ? parsed.watchlist : [],
       watchedMovies: Array.isArray(parsed.watchedMovies) ? parsed.watchedMovies : [],
       watchedEpisodes: parsed.watchedEpisodes && typeof parsed.watchedEpisodes === 'object' ? parsed.watchedEpisodes : {},
-      region: typeof parsed.region === 'string' && parsed.region.length === 2 ? parsed.region : 'US',
+      region: hasRegion ? (parsed.region as string).toUpperCase() : (typeof window !== 'undefined' ? detectRegion() : 'US'),
     };
   } catch {
-    return defaultState;
+    return { ...defaultState, region: typeof window !== 'undefined' ? detectRegion() : 'US' };
   }
 }
 
