@@ -159,6 +159,25 @@
     background-size: 100% 14px;
     background-repeat: repeat-y;
   }
+
+  /* Syntax highlighting — semantic token classes, themed via one palette. */
+  .tsh-keyword { color: var(--color-accent); font-weight: 500; }
+  .tsh-function, .tsh-command { color: #f5f5f5; font-weight: 500; }
+  .tsh-string { color: #ff9b70; }
+  .tsh-number { color: #7ee787; }
+  .tsh-literal { color: #79c0ff; }
+  .tsh-property, .tsh-attr { color: #79c0ff; }
+  .tsh-tag, .tsh-type { color: #7ee787; }
+  .tsh-variable { color: #9dace4; }
+  .tsh-meta { color: #8b949e; }
+  .tsh-selector { color: #7ee787; }
+  .tsh-comment { color: #8b949e; font-style: italic; }
+  .tsh-operator { color: #c9d1d9; }
+  .tsh-inserted { color: #3fb950; }
+  .tsh-deleted { color: #f85149; }
+  .tsh-heading { color: #e6edf3; font-weight: 600; }
+  .tsh-code-inline { background: var(--muted); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0 0.25em; }
+  .tsh-link { color: #58a6ff; text-decoration: underline; }
 }
 
 /* The ring draws itself on. Only a target of 0 is needed here; the dash length

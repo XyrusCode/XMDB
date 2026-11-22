@@ -15,6 +15,12 @@ export const Header = () => (
       >
         Watchlist
       </Link>
+      <Link
+        to="/docs"
+        className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+      >
+        Docs
+      </Link>
       <a
         href="https://www.themoviedb.org/"
         target="_blank"
