@@ -1,6 +1,6 @@
 {
   "name": "xmdb-skills",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Agent skills (convention sets) for the XMDB codebase: validated, reference-checked guidance loaded without executing package code.",
   "type": "module",
   "license": "MIT",
