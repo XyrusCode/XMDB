@@ -1,0 +1,37 @@
+{
+  "name": "xmdb-skills",
+  "version": "0.1.0",
+  "description": "Agent skills (convention sets) for the XMDB codebase: validated, reference-checked guidance loaded without executing package code.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Xyrus Code",
+  "keywords": [
+    "agent-skills",
+    "skills",
+    "ai",
+    "conventions",
+    "xmdb"
+  ],
+  "files": [
+    "dist",
+    "skills",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

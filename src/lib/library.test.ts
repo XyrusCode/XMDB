@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import {
-  loadLibrary,
+  libraryStore,
   toggleWatchlist,
   toggleMovieWatched,
   toggleEpisodeWatched,
@@ -8,24 +8,39 @@ import {
   isMovieWatched,
   isEpisodeWatched,
   setRegion,
-  getRegion,
   type LibraryState,
+  type WatchlistInput,
 } from './library';
 
-describe('library (localStorage)', () => {
+describe('library (TanStack Store)', () => {
+  const reset = () => {
+    libraryStore.setState(() => ({
+      watchlist: [],
+      watchedMovies: [],
+      watchedEpisodes: {},
+      region: 'US',
+      mediaScroll: {},
+    }));
+  };
+
   beforeEach(() => {
     localStorage.clear();
+    reset();
+  });
+
+  afterEach(() => {
+    reset();
   });
 
   it('returns default state when empty', () => {
-    const state = loadLibrary();
+    const state = libraryStore.state;
     expect(state.watchlist).toEqual([]);
     expect(state.watchedMovies).toEqual([]);
     expect(state.region).toBe('US');
   });
 
   it('toggles watchlist items', () => {
-    const item = { id: 1, mediaType: 'movie' as const, title: 'Test', posterPath: null };
+    const item: WatchlistInput = { id: 1, mediaType: 'movie', title: 'Test', posterPath: null };
     const s1 = toggleWatchlist(item);
     expect(s1.watchlist.length).toBe(1);
     expect(isInWatchlist(1, 'movie')).toBe(true);
@@ -50,10 +65,9 @@ describe('library (localStorage)', () => {
     expect(isEpisodeWatched(10, 1, 3)).toBe(false);
   });
 
-  it('sets and gets region', () => {
-    expect(getRegion()).toBe('US');
+  it('sets region', () => {
     setRegion('gb');
-    expect(getRegion()).toBe('GB');
+    expect(libraryStore.state.region).toBe('GB');
   });
 
   it('persists state to localStorage', () => {

@@ -3,12 +3,23 @@ import { SEO } from '@/components/global/SEO';
 import { IMAGE_BASE_URL, BACKDROP_SIZE, POSTER_SIZE } from '@/config';
 import { useMovie } from '@/queries/use-movie';
 import { useLibrary } from '@/hooks/use-library';
+import { appHotkeys } from '@/lib/app-hotkeys';
+import { useHotkey, useHotkeyHint } from '@tanstack/react-hotkeys';
 import { createMovieStructuredData } from '@/helpers/structured-data';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export const MoviePage = ({ movieId }: { movieId: number }) => {
   const { data: movie, isLoading, isError, error } = useMovie(movieId);
   const { isInWatchlist, toggleWatchlist, isMovieWatched, toggleMovieWatched, region, setRegion } = useLibrary();
+
+  // Keyboard: toggle watchlist / mark watched (Mod+Shift+L, Mod+Shift+W).
+  useHotkey(appHotkeys['actions.toggleWatchlist'], () => {
+    if (movie) toggleWatchlist({ id: movie.id, mediaType: 'movie', title: movie.title, posterPath: movie.poster_path, backdropPath: movie.backdrop_path });
+  }, { enabled: !!movie });
+  useHotkey(appHotkeys['actions.markWatched'], () => {
+    if (movie) toggleMovieWatched(movie.id);
+  }, { enabled: !!movie });
+  const watchlistHint = useHotkeyHint(appHotkeys['actions.toggleWatchlist']);
 
   if (isLoading) {
     return (
@@ -110,6 +121,7 @@ export const MoviePage = ({ movieId }: { movieId: number }) => {
                   })
                 }
                 className={`px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors ${inWatchlist ? 'bg-white text-black' : 'bg-neutral-800 text-white hover:bg-neutral-700'}`}
+                aria-label={`${inWatchlist ? 'Remove from watchlist' : 'Add to watchlist'}${watchlistHint ? ` (hotkey: ⌘Shift+L)` : ''}`}
               >
                 {inWatchlist ? '✓ In Watchlist' : '+ Watchlist'}
               </button>
