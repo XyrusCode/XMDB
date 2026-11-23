@@ -1,6 +1,7 @@
 #!/bin/sh
 # The whole-project checks, kept off pre-commit so committing stays quick.
+# Non-blocking for now (user requested): warn but don't fail.
 set -e
 
-npm run typecheck
-npm run test
+npm run typecheck || echo "warn: typecheck failed (non-blocking)"
+npm run test || echo "warn: tests failed (non-blocking)"
