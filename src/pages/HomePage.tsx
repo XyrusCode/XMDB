@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { SEO } from '@/components/global/SEO';
 import { MediaCard } from '@/components/media/MediaCard';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -11,6 +11,8 @@ import { useMultiSearch } from '@/queries/use-multi-search';
 import { useAnimePicks, useKDramas, useCDramas } from '@/queries/use-discover';
 import { useLibrary } from '@/hooks/use-library';
 import { MediaVirtualRow } from '@/components/virtual/MediaVirtualRow';
+import { appHotkeys } from '@/lib/app-hotkeys';
+import { useHotkey } from '@tanstack/react-hotkeys';
 import { IMAGE_BASE_URL, BACKDROP_SIZE } from '@/config';
 
 function yearFromDate(d?: string) {
@@ -37,6 +39,18 @@ export const HomePage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearch = useDebounce(searchTerm, 400);
   const { region } = useLibrary();
+  const navigate = useNavigate();
+
+  // Keyboard: focus search (Mod+K), jump to top (G G), docs (Mod+Shift+D).
+  useHotkey(appHotkeys['nav.search'], () => {
+    document.getElementById('search')?.focus();
+  });
+  useHotkey(appHotkeys['nav.goToTop'], () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+  useHotkey(appHotkeys['actions.openDocs'], () => {
+    navigate({ to: '/docs' });
+  });
 
   const { data: trendingMovies, isLoading: loadingTM, isError: errTM } = useTrendingMovies(region);
   const { data: trendingTV, isLoading: loadingTT, isError: errTT } = useTrendingTV(region);

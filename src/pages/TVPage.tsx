@@ -5,6 +5,8 @@ import { IMAGE_BASE_URL, BACKDROP_SIZE, POSTER_SIZE } from '@/config';
 import { useTV } from '@/queries/use-tv';
 import { useSeason } from '@/queries/use-season';
 import { useLibrary } from '@/hooks/use-library';
+import { appHotkeys } from '@/lib/app-hotkeys';
+import { useHotkey, useHotkeyHint } from '@tanstack/react-hotkeys';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export const TVPage = ({ tvId }: { tvId: number }) => {
@@ -12,6 +14,12 @@ export const TVPage = ({ tvId }: { tvId: number }) => {
   const { isInWatchlist, toggleWatchlist, toggleEpisodeWatched, isEpisodeWatched, region, setRegion } = useLibrary();
   const [selectedSeason, setSelectedSeason] = useState<number | null>(null);
   const { data: seasonData, isLoading: loadingSeason } = useSeason(tvId, selectedSeason);
+
+  // Keyboard: toggle watchlist (Mod+Shift+L).
+  useHotkey(appHotkeys['actions.toggleWatchlist'], () => {
+    if (tv) toggleWatchlist({ id: tv.id, mediaType: 'tv', title: tv.name, posterPath: tv.poster_path, backdropPath: tv.backdrop_path });
+  }, { enabled: !!tv });
+  const watchlistHint = useHotkeyHint(appHotkeys['actions.toggleWatchlist']);
 
   if (isLoading) {
     return (
@@ -115,6 +123,7 @@ export const TVPage = ({ tvId }: { tvId: number }) => {
                   })
                 }
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${inWatchlist ? 'bg-white text-black' : 'bg-neutral-800 text-white hover:bg-neutral-700'}`}
+                aria-label={`${inWatchlist ? 'Remove from watchlist' : 'Add to watchlist'}${watchlistHint ? ' (hotkey: ⌘Shift+L)' : ''}`}
               >
                 {inWatchlist ? '✓ In Watchlist' : '+ Watchlist'}
               </button>
